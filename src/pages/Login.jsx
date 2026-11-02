@@ -1,15 +1,19 @@
 import { useState } from "react";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Ticket, Eye, EyeOff } from "lucide-react";
 import { Button } from "../components/ui/button";
+import api from "../services/api";
 
 export default function Login() {
+  const navigate = useNavigate();
+
+  const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState("");
 
-  function handleSubmit(event) {
+  async function handleSubmit(event) {
     event.preventDefault();
     setError("");
 
@@ -23,7 +27,27 @@ export default function Login() {
       return;
     }
 
-    setError("The login API is not connected yet.");
+    try {
+      setIsSubmitting(true);
+
+      const response = await api.post("/auth/login", {
+        email: email.trim(),
+        password,
+      });
+
+      console.log("Login successful:", response.data);
+
+      navigate("/dashboard", { replace: true });
+    } catch (error) {
+      console.error("Login error:", error);
+
+      setError(
+        error.response?.data?.message ||
+          "Unable to connect to the server. Please try again.",
+      );
+    } finally {
+      setIsSubmitting(false);
+    }
   }
 
   return (
@@ -52,7 +76,10 @@ export default function Login() {
 
         <form onSubmit={handleSubmit} className="mt-8 space-y-5">
           <div>
-            <label htmlFor="email" className="mb-2 block text-sm font-medium text-slate-700">
+            <label
+              htmlFor="email"
+              className="mb-2 block text-sm font-medium text-slate-700"
+            >
               Email address
             </label>
             <input
@@ -70,7 +97,10 @@ export default function Login() {
 
           <div>
             <div className="mb-2 flex items-center justify-between">
-              <label htmlFor="password" className="text-sm font-medium text-slate-700">
+              <label
+                htmlFor="password"
+                className="text-sm font-medium text-slate-700"
+              >
                 Password
               </label>
               <button
@@ -107,14 +137,21 @@ export default function Login() {
           </div>
 
           {error && (
-            <p role="alert" className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700">
+            <p
+              role="alert"
+              className="rounded-lg bg-rose-50 p-3 text-sm text-rose-700"
+            >
               {error}
             </p>
           )}
 
-          <Button type="submit" className="h-11 w-full rounded-lg bg-indigo-600 text-white hover:bg-indigo-700">
-            Sign in
-            <ArrowRight size={16} />
+          <Button
+            type="submit"
+            disabled={isSubmitting}
+            className="h-11 w-full rounded-lg bg-indigo-600 text-white hover:bg-indigo-700"
+          >
+            {isSubmitting ? "Signing in..." : "Sign in"}
+            {!isSubmitting && <ArrowRight size={16} />}
           </Button>
         </form>
 
