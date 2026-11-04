@@ -2,11 +2,12 @@ import { useState } from "react";
 import { Link, useNavigate } from "react-router-dom";
 import { ArrowRight, Ticket, Eye, EyeOff } from "lucide-react";
 import { Button } from "../components/ui/button";
+import { useAuth } from "../context/AuthContext";
 import api from "../services/api";
 
 export default function Login() {
   const navigate = useNavigate();
-
+  const { setUser } = useAuth();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showPassword, setShowPassword] = useState(false);
   const [email, setEmail] = useState("");
@@ -30,12 +31,16 @@ export default function Login() {
     try {
       setIsSubmitting(true);
 
-      const response = await api.post("/auth/login", {
+      await api.post("/auth/login", {
         email: email.trim(),
         password,
       });
 
-      console.log("Login successful:", response.data);
+      // Fetch the authenticated user's details
+      const userResponse = await api.get("/auth/me");
+
+      // Update global authentication state
+      setUser(userResponse.data.user);
 
       navigate("/dashboard", { replace: true });
     } catch (error) {
