@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { useTickets } from "../hooks/useTickets";
+import CreateTicket from "../components/CreateTicket";
 
 export default function Tickets() {
   const [page, setPage] = useState(1);
@@ -53,6 +54,8 @@ export default function Tickets() {
         )}
       </div>
 
+      <CreateTicket />
+      
       {/* Filters */}
       <div className="mb-6 flex flex-wrap gap-4">
         <select
